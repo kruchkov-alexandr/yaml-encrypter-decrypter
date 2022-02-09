@@ -74,107 +74,52 @@ set GOARCH=amd64 && set GOOS=linux && go build -o yed main.go
 set GOARCH=amd64 && set GOOS=windows && go build -o yed.exe main.go
 ```
 
-# EXAMPLE 1
+# EXAMPLE
 
 before encrypt:
 
-```
+```yaml
 #first comment
 env:
   rainc: 4354
+  # comment two
   coins: 4354
-str: #comment
+str: # 3 comment
   1: 345343
+  
   2: e5w5g345t
+  
   aerfger:
     rrr: ffgragf
     sd: 4354
+    
     #comment
+    
     env:
       srfgar: 4354
-
 ```
 
 after encrypt:
 
 `./yed`
-```
+```yaml
 #first comment
 env:
-  rainc: AES256-encoded:76bfd42db6f371588ad2a3402130822917f71963d3497339364ff7a242f9cbcd
-  coins: AES256-encoded:164d03d0aa62f3af2f9685d64bf07b3d3ada66c527b518aa36051caf0d2b98b3
-str: #comment
+  rainc: AES256:RNAavGUfxj2bsQUL1THSwaEXk/hL8xsQNHVSSGFcx78=
+  # AES256:UUETCiN57U0cveOWOvFEskmkobCrfmySMsx9OD1hKVg=
+  coins: AES256:HtoAvsZQjrsbDyiWMvgmCWF2lqxBGhP4xccROVJWe+o=
+str: # 3 comment
   1: 345343
+
   2: e5w5g345t
+
   aerfger:
     rrr: ffgragf
     sd: 4354
-    #comment
-    env:
-      srfgar: AES256-encoded:035dec914142274f9d2c313adbb1a89176a38cd9116e01a4447acf3205b4120b
 
-```
-
-# EXAMPLE 2
-before encrypt:
-
-```
-#first comment
-env:
-  first: 4354
-  # пустая строка
-
-  second: 2345625
-str: #comment
-  1: 345343
-
-  2: e5w5g345t
-
-  aerfger:
-    rrr: 2
-    login: p9a358htw45uil9pghl945uighwlp45789wty
     #comment
 
     env:
-      password: rio;jkghertuilgyh5uighsa0459tu4
-  apps:
-    1:
-      env:
-        key: value
-        key1: value2
-    2:
-      env:
-        key3: value3
-```
+      srfgar: AES256:uhkboJTlM2wa5VBrgWQ5njwSBVyEQTEXVF89yH/eteI=
 
-after encrypt:
-
-`./yed`
-```
-#first comment
-env:
-  first: AES256-encoded:b5c10458a34f5661358f5048ae69a743ef8d6731a0762fdbdff9251556030c25
-  # AES256-encoded:7f64e647a89663f324be281c675554a4bbd9574356f700ae0c768f2b6a6ef20eb286f871a977dacd
-
-  second: 2345625
-str: #comment
-  1: 345343
-
-  2: e5w5g345t
-
-  aerfger:
-    rrr: 2
-    login: p9a358htw45uil9pghl945uighwlp45789wty
-    #comment
-
-    env:
-      password: AES256-encoded:35173190cf1fe17bff5c7a472a22f76ed94b0def6e6ad8025b1d24e6cbc306945702b8d5724c8dec26c6001f8d383879dfd10e32bf0e5064db20a7
-  apps:
-    1:
-      env:
-        key: AES256-encoded:c7f7ea8b52c267b3b9350d5e57cd12f5cb5d2a5226b78af3298dd861c09d0a44a2
-        key1: AES256-encoded:d0c4f073cc1df8a87a472164445b569cad2609b6257b050e70f230c9d7a8de44818f
-    2:
-      env:
-        key3: AES256-encoded:daaeefc6343c3570d582035cc02a62296945b8d1aa882a2aa1ad46f145749e92d9dd
 ```
