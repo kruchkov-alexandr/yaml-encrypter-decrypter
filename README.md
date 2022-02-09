@@ -36,3 +36,42 @@
 - есть дефолтный key, после MVP будет убрано дефолтное значение
 - ключ пока длинной 32бита, нет поддержки спецсимволов
 - от использования библиотек gopkg.in/yaml.v3 и gopkg.in/yaml.v2 пришлось отказаться, потому как они на ходу конвертят в json формат, тем самым затирая комментарии. Задача утилиты шифровать секреты, а не стирать комменты, которые зачастую очень важны.
+- запуск утилиты шифрует/дешифрует YAML файл по ключевому значению `AES256-encoded:` в тексте, отдельного флага на декрипт/экрипт нет, задача максимально упростить работу.
+
+# DEMO
+
+before encrypt:
+```
+#first comment
+env:
+  rainc: 4354
+  coins: 4354
+str: #comment
+  1: 345343
+  2: e5w5g345t
+  aerfger:
+    rrr: ffgragf
+    sd: 4354
+    #comment
+    env:
+      srfgar: 4354
+
+```
+
+after encrypt:
+```
+#first comment
+env:
+  rainc: AES256-encoded:76bfd42db6f371588ad2a3402130822917f71963d3497339364ff7a242f9cbcd
+  coins: AES256-encoded:164d03d0aa62f3af2f9685d64bf07b3d3ada66c527b518aa36051caf0d2b98b3
+str: #comment
+  1: 345343
+  2: e5w5g345t
+  aerfger:
+    rrr: ffgragf
+    sd: 4354
+    #comment
+    env:
+      srfgar: AES256-encoded:035dec914142274f9d2c313adbb1a89176a38cd9116e01a4447acf3205b4120b
+
+```
