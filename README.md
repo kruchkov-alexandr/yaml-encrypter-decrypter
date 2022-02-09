@@ -52,6 +52,12 @@
 - пока сваливается с ошибкой, если значение пустое(не задано), но енкодит, если задано, но пустое ("")
 - строчка с комментарием под блоком env: так же шифруется, потом добавлю проверку.
 
+# BUILD
+```
+set GOARCH=amd64 && set GOOS=linux && go build -o yed main.go
+set GOARCH=amd64 && set GOOS=windows && go build -o yed.exe main.go
+```
+
 # EXAMPLE 1
 
 before encrypt:
