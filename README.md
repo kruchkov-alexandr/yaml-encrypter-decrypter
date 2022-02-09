@@ -41,6 +41,8 @@
 # DEMO
 
 before encrypt:
+
+`./go_build_test_go.exe`
 ```
 #first comment
 env:
@@ -59,6 +61,8 @@ str: #comment
 ```
 
 after encrypt:
+
+`./go_build_test_go.exe`
 ```
 #first comment
 env:
