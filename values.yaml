@@ -1,8 +1,8 @@
 #first comment
 env:
-  rainc: AES256:RNAavGUfxj2bsQUL1THSwaEXk/hL8xsQNHVSSGFcx78=
-  # AES256:UUETCiN57U0cveOWOvFEskmkobCrfmySMsx9OD1hKVg=
-  coins: AES256:HtoAvsZQjrsbDyiWMvgmCWF2lqxBGhP4xccROVJWe+o=
+  rainc: AES256:mXBWxRaddFbdZNt6VnNuKw8/l86J3GkLTym28+bkqcg=
+  # AES256:F4Tkz/WhnNhvQ/jEjqv+Dvr9Dp2+WI18bcmsMKf8zrg=
+  coins: AES256:ukdoRHD9fH++Pr9SO922sqezyWHUwTjsIpgk3How6GM=
 str: # 3 comment
   1: 345343
 
@@ -15,4 +15,4 @@ str: # 3 comment
     #comment
 
     env:
-      srfgar: AES256:uhkboJTlM2wa5VBrgWQ5njwSBVyEQTEXVF89yH/eteI=
+      srfgar: AES256:piBajifwK+OWEMCOBo7aGgwT3P0CsNAONn1jHaWtWdc=

@@ -34,13 +34,35 @@ func main() {
 	)
 	flagEnv := flag.String("env", "env:", "block-name for encode/decode")
 	flagDebug := flag.String("debug", "false", "debug mode, print encode/decode to stdout")
+	flagEncryptValue := flag.String("encrypt", "", "value to encrypt")
+	flagDecryptValue := flag.String("decrypt", "", "value to decrypt")
 	flag.Parse()
 
 	filename := *flagFile
 	key := *flagKey
 	env := *flagEnv
 	debug := *flagDebug
+	encryptValue := *flagEncryptValue
+	decryptValue := *flagDecryptValue
+	// for @kpogonea
 	const AES = "AES256:"
+
+	// for @jaxel87, encrypt/decrypt value by flag
+	if encryptValue != "" {
+		encrypted, err := encryptAES(key, encryptValue)
+		fmt.Println(encrypted)
+		if err != nil {
+			log.Fatalf("something wrong during encrypt")
+		}
+	}
+	if decryptValue != "" {
+		decrypted, err := decryptAES(key, decryptValue)
+		fmt.Println(decrypted)
+		if err != nil {
+			log.Fatalf("something wrong during decrypt")
+		}
+		os.Exit(0)
+	}
 
 	text := readFile(filename)
 	for _, eachLn := range text {
@@ -55,7 +77,7 @@ func main() {
 
 			encrypted, err := encryptAES(key, stringArray[1])
 			if err != nil {
-				log.Fatalf("something wrong1111")
+				log.Fatalf("something wrong")
 			}
 			matchedAesEncrypted, _ := regexp.MatchString(AES, stringArray[1])
 			if !matchedAesEncrypted {

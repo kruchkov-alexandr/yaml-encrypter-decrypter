@@ -24,7 +24,7 @@
 
 
 # Как использовать
-У утилиты 4 флага, значения которых задано по умолчанию.
+У утилиты 6 флагов, значения у 4-ех задано по умолчанию.
 ```
   -debug string
         режим откладки, выводит в stdout планируемые изменения, но не изменяет yaml файл
@@ -39,6 +39,13 @@
         секретный ключ
         после "пилота" будет убрано дефолтное значение
         AES key for encrypt/decrypt (default "}tf&Wr+Nt}A9g{s")
+  -decrypt string
+        при вводе значения в stdout выводится расшифрованное значение
+        value to decrypt
+  -encrypt string
+        при вводе значения в stdout выводится зашифрованое значение
+        value to encrypt
+
 ```
 
 # Варианты запуска утилиты
@@ -46,6 +53,11 @@
 - `yed.exe -key 12345678123456781234567812345678` 
 - `yed.exe -filename application.yaml` 
 - `yed.exe -filename application.yaml -key 12345678123456781234567812345678` 
+- `./yed -encrypt PLAINTEXT`
+- `./yed -decrypt DpsqP/MxMSk3wk+GDBBG0O6vcNmU5tW/mvtnfdd0GOY=`
+- `./yed -decrypt S5B4ZY2aA1xXBe8HJ8se5sKb/v2J/b7uzOoifpIByzM=  -key SUPERSECRETpassw0000000rd`
+
+
 
 # Особенности 
 Так, как это MVP, есть ряд особенностей:
@@ -64,9 +76,30 @@ metadata:
   name: none
 data:
   {{- range $key, $value :=  .Values.env -}}
-    {{- $key | nindent 2 -}}: {{ encryptAES $aesKey ($value|quote) | printf "AES256:%s" }}
+    {{- $key | nindent 2 -}}: {{ decryptAES $aesKey ($value|quote) | printf "AES256:%s" }}
   {{- end }}
 ```
+
+# Encrypt/Decrypt one value feature
+Можно просто шифровать/расшифровать значения, не перезаписывая файл.
+Например для того, чтобы не меняя весь файл, зашифровать одну переменную и копипастом вставить в YAML щагифрованный документ.
+
+Пример использования:
+```yaml
+$ ./yed -encrypt PLAINTEXT
+DpsqP/MxMSk3wk+GDBBG0O6vcNmU5tW/mvtnfdd0GOY=
+
+$ ./yed -decrypt DpsqP/MxMSk3wk+GDBBG0O6vcNmU5tW/mvtnfdd0GOY=
+PLAINTEXT
+
+$ ./yed -encrypt PLAINTEXT -key SUPERSECRETpassw0000000rd
+S5B4ZY2aA1xXBe8HJ8se5sKb/v2J/b7uzOoifpIByzM=
+
+$ ./yed -decrypt S5B4ZY2aA1xXBe8HJ8se5sKb/v2J/b7uzOoifpIByzM=  -key SUPERSECRETpassw0000000rd
+PLAINTEXT
+
+```
+
 
 # BUILD
 ```
