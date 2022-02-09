@@ -1,8 +1,8 @@
 #first comment
 env:
-  rainc: AES256:mXBWxRaddFbdZNt6VnNuKw8/l86J3GkLTym28+bkqcg=
-  # AES256:F4Tkz/WhnNhvQ/jEjqv+Dvr9Dp2+WI18bcmsMKf8zrg=
-  coins: AES256:ukdoRHD9fH++Pr9SO922sqezyWHUwTjsIpgk3How6GM=
+  rainc: 4354
+  # comment
+  coins: 4354
 str: # 3 comment
   1: 345343
 
@@ -15,4 +15,4 @@ str: # 3 comment
     #comment
 
     env:
-      srfgar: AES256:piBajifwK+OWEMCOBo7aGgwT3P0CsNAONn1jHaWtWdc=
+      srfgar: 4354

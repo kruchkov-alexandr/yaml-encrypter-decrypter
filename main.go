@@ -54,6 +54,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("something wrong during encrypt")
 		}
+		os.Exit(0)
 	}
 	if decryptValue != "" {
 		decrypted, err := decryptAES(key, decryptValue)
