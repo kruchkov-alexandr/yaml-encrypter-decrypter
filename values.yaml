@@ -1,3 +1,4 @@
 #first comment
 env:
-  rainc: AES256-encoded:f72093b4e12813fc0b4bb00a0000257f50f175bd09ef9dd912da949900366a3161c25a22e1
+  key: AES256:MkwSa3f+LLo8mRMZktyloCeQMkQk0fvAZTUF/yMGjyU=
+  govnapiropga: AES256:xAOimQK9LDcaXCqlBMok/lM7EYCi2DAp6jF0O77UioI=

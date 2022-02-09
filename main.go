@@ -2,10 +2,11 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"encoding/hex"
+	"encoding/base64"
 	"flag"
 	"fmt"
 	"io"
@@ -28,8 +29,8 @@ func main() {
 	)
 	flagKey := flag.String(
 		"key",
-		"8d9b2dd4c94e8ac7ef742fc0ed162adf49ef8676f906517de1d5085a817ec824",
-		"key for encode, only length 32bit",
+		"}tf&Wr+Nt}A9g{s",
+		"AES key for encrypt/decrypt",
 	)
 	flagEnv := flag.String("env", "env:", "block-name for encode/decode")
 	flagDebug := flag.String("debug", "false", "debug mode, print encode/decode to stdout")
@@ -39,7 +40,7 @@ func main() {
 	key := *flagKey
 	env := *flagEnv
 	debug := *flagDebug
-	const AES = "AES256-encoded:"
+	const AES = "AES256:"
 
 	text := readFile(filename)
 	for _, eachLn := range text {
@@ -52,7 +53,10 @@ func main() {
 			stringArray := strings.Fields(eachLn)
 			whitespaces := strings.Repeat(" ", currentWhiteSpaces)
 
-			encrypted := encrypt(stringArray[1], key)
+			encrypted, err := encryptAES(key, stringArray[1])
+			if err != nil {
+				log.Fatalf("something wrong1111")
+			}
 			matchedAesEncrypted, _ := regexp.MatchString(AES, stringArray[1])
 			if !matchedAesEncrypted {
 				if debug == "true" {
@@ -61,7 +65,10 @@ func main() {
 				tmpYamlText = append(tmpYamlText, whitespaces+stringArray[0]+" "+AES+encrypted)
 			} else {
 				aesBeforeDecrypt := strings.ReplaceAll(stringArray[1], AES, "")
-				decrypted := decrypt(aesBeforeDecrypt, key)
+				decrypted, err := decryptAES(key, aesBeforeDecrypt)
+				if err != nil {
+					log.Fatalf("something wrong during decrypt")
+				}
 				if debug == "true" {
 					fmt.Println(whitespaces + stringArray[0] + " " + decrypted)
 				}
@@ -114,65 +121,74 @@ func readFile(filename string) (text []string) {
 
 }
 
-func encrypt(stringToEncrypt string, keyString string) (encryptedString string) {
+//func main() {
+//	encoded, err := encryptAES("secretkey", "plaintext")
+//	fmt.Println(encoded)
+//	if err != nil {
+//		log.Fatalf("error")
+//	}
+//	decoded, err2 := decryptAES("secretkey", "30tEfhuJSVRhpG97XCuWgz2okj7L8vQ1s6V9zVUPeDQ=")
+//	fmt.Println(decoded)
+//	if err2 != nil {
+//		log.Fatalf("error")
+//	}
+//
+//}
 
-	//Since the key is in string, we need to convert decode it to bytes
-	key, _ := hex.DecodeString(keyString)
-	plaintext := []byte(stringToEncrypt)
+func encryptAES(password string, plaintext string) (string, error) {
+	if plaintext == "" {
+		return "", nil
+	}
 
-	//Create a new Cipher Block from the key
+	key := make([]byte, 32)
+	copy(key, []byte(password))
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		log.Fatalf("Please enter 32 length key")
-
-	}
-	//Create a new GCM
-	aesGCM, err := cipher.NewGCM(block)
-	if err != nil {
-		panic(err.Error())
+		return "", err
 	}
 
-	//Create a nonce. Nonce should be from GCM
-	nonce := make([]byte, aesGCM.NonceSize())
-	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		panic(err.Error())
+	content := []byte(plaintext)
+	blockSize := block.BlockSize()
+	padding := blockSize - len(content)%blockSize
+	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+	content = append(content, padtext...)
+
+	ciphertext := make([]byte, aes.BlockSize+len(content))
+
+	iv := ciphertext[:aes.BlockSize]
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		return "", err
 	}
 
-	//Encrypt the data using aesGCM.Seal
-	//Since we don't want to save the nonce somewhere else in this case, we add it as a prefix to the encrypted data.
-	//The first nonce argument in Seal is the prefix.
-	ciphertext := aesGCM.Seal(nonce, nonce, plaintext, nil)
-	return fmt.Sprintf("%x", ciphertext)
+	mode := cipher.NewCBCEncrypter(block, iv)
+	mode.CryptBlocks(ciphertext[aes.BlockSize:], content)
+
+	return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
 
-func decrypt(encryptedString string, keyString string) (decryptedString string) {
+func decryptAES(password string, crypt64 string) (string, error) {
+	if crypt64 == "" {
+		return "", nil
+	}
 
-	key, _ := hex.DecodeString(keyString)
-	enc, _ := hex.DecodeString(encryptedString)
+	key := make([]byte, 32)
+	copy(key, []byte(password))
 
-	//Create a new Cipher Block from the key
+	crypt, err := base64.StdEncoding.DecodeString(crypt64)
+	if err != nil {
+		return "", err
+	}
+
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		panic(err.Error())
+		return "", err
 	}
 
-	//Create a new GCM
-	aesGCM, err := cipher.NewGCM(block)
-	if err != nil {
-		panic(err.Error())
-	}
+	iv := crypt[:aes.BlockSize]
+	crypt = crypt[aes.BlockSize:]
+	decrypted := make([]byte, len(crypt))
+	mode := cipher.NewCBCDecrypter(block, iv)
+	mode.CryptBlocks(decrypted, crypt)
 
-	//Get the nonce size
-	nonceSize := aesGCM.NonceSize()
-
-	//Extract the nonce from the encrypted data
-	nonce, ciphertext := enc[:nonceSize], enc[nonceSize:]
-
-	//Decrypt the data
-	plaintext, err := aesGCM.Open(nil, nonce, ciphertext, nil)
-	if err != nil {
-		log.Fatalf("Incorrect key, please enter correct key, 32 length")
-	}
-
-	return fmt.Sprintf("%s", plaintext)
+	return string(decrypted[:len(decrypted)-int(decrypted[len(decrypted)-1])]), nil
 }

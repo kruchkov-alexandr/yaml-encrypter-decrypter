@@ -2,10 +2,16 @@
 
 Утилита для win/linux платформы, позволяющая шифровать в AES значения паролей/секретов в файлах YAML формата
 
-Актуально для тех, кто не использует hashicorp vault, но не хочет хранить секретные данные в git репозитории.
+Шифрование построено на базе AES-256 CBC, который входит в состав функции Helm 3:
+- https://helm.sh/docs/chart_template_guide/function_list/#encryptaes
+- https://helm.sh/docs/chart_template_guide/function_list/#decryptaes
+
+Утилита особенно актуальна для тех, кто не использует hashicorp vault, 
+но не хочет хранить секретные данные в git репозитории.
 
 
 # Зачем это? есть же Ansible vault!
+- полная совместимость с helm 3 версии, функции `decryptAES` и `encryptAES`. YAML файл можно шифровать и расшифровывать как при помощи утилиты, так и шифровать утилитой, но расшифровывать чартом хелма.
 - шифруется не весь файл, как в ansible vault, а только значения переменных. Это очень удобно для git history/ pull request
 - не требуется дополнительного ПО: python, ansible, ansible-vault и куча dependency. Кроссплатформенность позволяет сделать бинарник хоть для самого крохотного образа alpine или для "обрезанных дистрибутивов линукса"
 - работает везде: linux/windows/macos/wsl/gitbash/raspberry, при компиляции можно выбрать любые платформы. Тот же ansible-vault не работает на gitbash.
@@ -27,27 +33,22 @@
         файл,который необходимо зашифровать/дешифровать
         filename for encode/decode (default "values.yaml")
   -key string
-        секретный ключ. Обязательно использоание длины в 32 бита.
+        секретный ключ
         после "пилота" будет убрано дефолтное значение
-        key for encode, only length 32bit (default "8d9b2dd4c94e8ac7ef742fc0ed162adf49ef8676f906517de1d5085a817ec824")
+        AES key for encrypt/decrypt (default "}tf&Wr+Nt}A9g{s")
 ```
 
 # Варианты запуска утилиты
-`go_build_test_go.exe`
-
-`go_build_test_go.exe -key 12345678123456781234567812345678`
-
-`go_build_test_go.exe -filename application.yaml`
-
-`go_build_test_go.exe -filename application.yaml -key 12345678123456781234567812345678`
+- `yed.exe` 
+- `yed.exe -key 12345678123456781234567812345678` 
+- `yed.exe -filename application.yaml` 
+- `yed.exe -filename application.yaml -key 12345678123456781234567812345678` 
 
 # Особенности 
 Так, как это MVP, есть ряд особенностей:
-- текущий мезанизм шифрования будет заменён на AES-256 CBC (как в хелм 3)
 - есть дефолтный key, после MVP будет убрано дефолтное значение
-- ключ пока длинной 32бита, нет поддержки спецсимволов
 - от использования библиотек gopkg.in/yaml.v3 и gopkg.in/yaml.v2 пришлось отказаться, потому как они на ходу конвертят в json формат, тем самым затирая комментарии. Задача утилиты шифровать секреты, а не стирать комменты, которые зачастую очень важны.
-- запуск утилиты шифрует/дешифрует YAML файл по ключевому значению `AES256-encoded:` в тексте, отдельного флага на декрипт/экрипт нет, задача максимально упростить работу.
+- запуск утилиты шифрует/дешифрует YAML файл по ключевому значению `AES256:` в тексте, отдельного флага на декрипт/экрипт нет, задача максимально упростить работу.
 - пока сваливается с ошибкой, если значение пустое(не задано), но енкодит, если задано, но пустое ("")
 - строчка с комментарием под блоком env: так же шифруется, потом добавлю проверку.
 
@@ -55,7 +56,6 @@
 
 before encrypt:
 
-`./go_build_test_go.exe`
 ```
 #first comment
 env:
@@ -75,7 +75,7 @@ str: #comment
 
 after encrypt:
 
-`./go_build_test_go.exe`
+`./yed`
 ```
 #first comment
 env:
@@ -96,7 +96,6 @@ str: #comment
 # EXAMPLE 2
 before encrypt:
 
-`./go_build_test_go.exe`
 ```
 #first comment
 env:
@@ -128,7 +127,7 @@ str: #comment
 
 after encrypt:
 
-`./go_build_test_go.exe`
+`./yed`
 ```
 #first comment
 env:
