@@ -144,20 +144,6 @@ func readFile(filename string) (text []string) {
 
 }
 
-//func main() {
-//	encoded, err := encryptAES("secretkey", "plaintext")
-//	fmt.Println(encoded)
-//	if err != nil {
-//		log.Fatalf("error")
-//	}
-//	decoded, err2 := decryptAES("secretkey", "30tEfhuJSVRhpG97XCuWgz2okj7L8vQ1s6V9zVUPeDQ=")
-//	fmt.Println(decoded)
-//	if err2 != nil {
-//		log.Fatalf("error")
-//	}
-//
-//}
-
 func encryptAES(password string, plaintext string) (string, error) {
 	if plaintext == "" {
 		return "", nil
