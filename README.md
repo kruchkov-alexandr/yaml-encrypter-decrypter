@@ -26,6 +26,9 @@
 - не все деплоят при помощи helm, решение так же подойдет например для темплейтов openshift или ansible (community.kubernetes)
 - захотелось =) 
 
+# Download
+https://github.com/kruchkov-alexandr/yaml-encrypter-decrypter/releases/
+
 # Как использовать
 У утилиты 6 флагов, значения у 4-ех задано по умолчанию.
 ```
