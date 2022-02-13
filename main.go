@@ -47,7 +47,7 @@ func main() {
 	// for @kpogonea
 	const AES = "AES256:"
 
-	// for @jaxel87, encrypt/decrypt value by flag
+	// for @jaxel87, encrypt/decrypt value by flag without encrypt/decrypt file
 	if encryptValue != "" {
 		encrypted, err := encryptAES(key, encryptValue)
 		fmt.Println(encrypted)
@@ -74,20 +74,47 @@ func main() {
 		}
 		if valuesForFormatting {
 			stringArray := strings.Fields(eachLn)
+			var value string
+			if len(stringArray) == 1 {
+				value = ""
+			} else {
+				value = stringArray[1]
+			}
+			// print whitespaces
 			whitespaces := strings.Repeat(" ", currentWhiteSpaces)
 
-			encrypted, err := encryptAES(key, stringArray[1])
+			encrypted, err := encryptAES(key, value)
 			if err != nil {
 				log.Fatalf("something wrong")
 			}
-			matchedAesEncrypted, _ := regexp.MatchString(AES, stringArray[1])
+			matchedAesEncrypted, _ := regexp.MatchString(AES, value)
+			// check file is encrypted
 			if !matchedAesEncrypted {
 				if debug == "true" {
-					fmt.Println(whitespaces + stringArray[0] + " " + AES + encrypted)
+					if stringArray[0] == "#" || stringArray[0] == "# " {
+						fmt.Println(eachLn)
+					} else {
+						if value != "" {
+							fmt.Println(whitespaces + stringArray[0] + " " + AES + encrypted)
+						} else {
+							fmt.Println(whitespaces + stringArray[0] + value)
+						}
+					}
+
 				}
-				tmpYamlText = append(tmpYamlText, whitespaces+stringArray[0]+" "+AES+encrypted)
+				// check if line in file is comment
+				if stringArray[0] == "#" || stringArray[0] == "# " {
+					tmpYamlText = append(tmpYamlText, eachLn)
+				} else {
+					if value != "" {
+						tmpYamlText = append(tmpYamlText, whitespaces+stringArray[0]+" "+AES+encrypted)
+					} else {
+						tmpYamlText = append(tmpYamlText, whitespaces+stringArray[0]+value)
+					}
+				}
+
 			} else {
-				aesBeforeDecrypt := strings.ReplaceAll(stringArray[1], AES, "")
+				aesBeforeDecrypt := strings.ReplaceAll(value, AES, "")
 				decrypted, err := decryptAES(key, aesBeforeDecrypt)
 				if err != nil {
 					log.Fatalf("something wrong during decrypt")
