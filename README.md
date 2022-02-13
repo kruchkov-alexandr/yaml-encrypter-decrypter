@@ -72,18 +72,68 @@ https://github.com/kruchkov-alexandr/yaml-encrypter-decrypter/releases/
 - запуск утилиты шифрует/дешифрует YAML файл по ключевому значению `AES256:` в тексте, отдельного флага на декрипт/экрипт нет, задача максимально упростить работу.
 
 
-# HELM compatibility (TODO, не проверено!)
-Пример для встраивания в чарт helm
+# HELM compatibility 
+Общая идея: хранить все values.yaml файлы с закодированном значении в гите.
+При деплое бинарник yed даже не нужен(!!!), расшифровка идёт при помощи нативных функций helm3.
+Пример для встраивания в чарт helm ниже.
+
+values.yaml
 ```yaml
+# aesKey: мы получаем через helm upgrade --install .... --set aesKey="СЕКРЕТНЫЙ КЛЮЧ"
+env:
+  rrrr: AES256:11xkAyke8Dx5dQepPSW+VV4FyNUhbcKC3+63+uuFgO8=
+
+```
+
+template\secret.yaml
+```yaml
+{{- $aesKey := .Values.aesKey }}
 apiVersion: v1
-kind: ConfigMap
+kind: Secret
 metadata:
-  name: none
+  name: example
+  namespace: example
+  labels:
+    app: example
 data:
   {{- range $key, $value :=  .Values.env -}}
-    {{- $key | nindent 2 -}}: {{ decryptAES $aesKey ($value|quote) | printf "AES256:%s" }}
+  {{- if hasPrefix "AES256:" $value -}}
+    {{- $key | nindent 2 -}}: {{ ( trimPrefix "AES256:" $value )  | decryptAES $aesKey | b64enc}}
+  {{- end }}
   {{- end }}
 ```
+
+Запуск хелма:
+```shell
+set SUPERSECRETAESKEY="}tf&Wr+Nt}A9g{s"
+helm template RELEASENAME ./CHARTDIRECTORY --values=values.yaml --set aesKey=$SUPERSECRETAESKEY
+```
+
+В итоге получаем при генерации манифеста:
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: example
+  namespace: example
+  labels:
+    app: example
+data:
+  rrrr: NDM1NA==
+```
+Если перевести значения из base64, то будет так:
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: example
+  namespace: example
+  labels:
+    app: example
+data:
+  rrrr: 4354
+```
+
 
 # Encrypt/Decrypt one value feature
 Можно просто шифровать/расшифровать значения, не перезаписывая файл.

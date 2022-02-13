@@ -1,9 +1,9 @@
 #first comment
 env:
-  rainc: 4354
+  rainc: AES256:HdtzIXtz2hdM/owjYO6pS84MaeMNnAfEAWG4/b1VQu8=
   # comment two
-  #comment sssss
-  coins: 4354
+  #comment AES256:ST7wc9VsfSj2XGBvNDORPS59Crk9Dbn2GgWEuZ74/jo=
+  coins: AES256:11xkAyke8Dx5dQepPSW+VV4FyNUhbcKC3+63+uuFgO8=
 str: # 3 comment
   1: 345343
 
@@ -16,5 +16,5 @@ str: # 3 comment
     #comment
 
     env:
-      srfgar: 4354
+      srfgar: AES256:FPhi75gxqcVcXV7j7COT8RmWceAKvH3OT/b48aSBJfw=
       #comm
