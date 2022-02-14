@@ -75,6 +75,7 @@ func main() {
 		if valuesForFormatting {
 			stringArray := strings.Fields(eachLn)
 			var value string
+			// check if value not set
 			if len(stringArray) == 1 {
 				value = ""
 			} else {
@@ -100,10 +101,13 @@ func main() {
 							fmt.Println(whitespaces + stringArray[0] + value)
 						}
 					}
-
 				}
-				// check if line in file is comment
-				if stringArray[0] == "#" || stringArray[0] == "# " {
+				//check if line is empty
+				if eachLn == "" {
+					tmpYamlText = append(tmpYamlText, eachLn)
+				}
+				//check if line in file is comment
+				if strings.HasPrefix(stringArray[0], "#") {
 					tmpYamlText = append(tmpYamlText, eachLn)
 				} else {
 					if value != "" {
@@ -131,7 +135,7 @@ func main() {
 			tmpYamlText = append(tmpYamlText, eachLn)
 		}
 		matchedEnvVariable, _ := regexp.MatchString(env, eachLn)
-		if matchedEnvVariable {
+		if matchedEnvVariable || eachLn == "" {
 			envWhiteSpaces = currentWhiteSpaces + 2
 			valuesForFormatting = true
 		}

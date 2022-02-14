@@ -1,20 +1,18 @@
 #first comment
 env:
-  rainc: AES256:HdtzIXtz2hdM/owjYO6pS84MaeMNnAfEAWG4/b1VQu8=
-  # comment two
-  #comment AES256:ST7wc9VsfSj2XGBvNDORPS59Crk9Dbn2GgWEuZ74/jo=
-  coins: AES256:11xkAyke8Dx5dQepPSW+VV4FyNUhbcKC3+63+uuFgO8=
-str: # 3 comment
-  1: 345343
+  key: value1
+  # comment two gg
+  #comment
+  #below empty string
+  coins: 56
 
-  2: e5w5g345t
+  emptyvalue:
+  empty_value_qoutes: ""
 
-  aerfger:
-    rrr: ffgragf
-    sd: 4354
+  key_with_comment: secretstring #follow the white rabbit
+  value_quotes: "faceless messenger"
+  value-new: "plaintext" # comment with whitespace
 
-    #comment
+next:
+  1: 2
 
-    env:
-      srfgar: AES256:FPhi75gxqcVcXV7j7COT8RmWceAKvH3OT/b48aSBJfw=
-      #comm
