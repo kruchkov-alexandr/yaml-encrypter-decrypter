@@ -91,17 +91,17 @@ func main() {
 			matchedAesEncrypted, _ := regexp.MatchString(AES, value)
 			// check file is encrypted
 			if !matchedAesEncrypted {
-				if debug == "true" {
-					if stringArray[0] == "#" || stringArray[0] == "# " {
-						fmt.Println(eachLn)
-					} else {
-						if value != "" {
-							fmt.Println(whitespaces + stringArray[0] + " " + AES + encrypted)
-						} else {
-							fmt.Println(whitespaces + stringArray[0] + value)
-						}
-					}
-				}
+				//if debug == "true" {
+				//	if stringArray[0] == "#" || stringArray[0] == "# " {
+				//		fmt.Println(eachLn)
+				//	} else {
+				//		if value != "" {
+				//			fmt.Println(whitespaces + stringArray[0] + " " + AES + encrypted)
+				//		} else {
+				//			fmt.Println(whitespaces + stringArray[0] + value)
+				//		}
+				//	}
+				//}
 				//check if line is empty
 				if eachLn == "" {
 					tmpYamlText = append(tmpYamlText, eachLn)
@@ -111,7 +111,9 @@ func main() {
 					tmpYamlText = append(tmpYamlText, eachLn)
 				} else {
 					if value != "" {
-						tmpYamlText = append(tmpYamlText, whitespaces+stringArray[0]+" "+AES+encrypted)
+						stringArray[1] = AES + encrypted
+						tmpYamlText = append(tmpYamlText, whitespaces+strings.Join(stringArray, " "))
+						fmt.Println(encrypted)
 					} else {
 						tmpYamlText = append(tmpYamlText, whitespaces+stringArray[0]+value)
 					}
@@ -123,15 +125,17 @@ func main() {
 				if err != nil {
 					log.Fatalf("something wrong during decrypt")
 				}
-				if debug == "true" {
-					fmt.Println(whitespaces + stringArray[0] + " " + decrypted)
-				}
-				tmpYamlText = append(tmpYamlText, whitespaces+stringArray[0]+" "+decrypted)
+				//if debug == "true" {
+				//	fmt.Println(whitespaces + stringArray[0] + " " + decrypted)
+				//}
+				stringArray[1] = decrypted
+				tmpYamlText = append(tmpYamlText, whitespaces+strings.Join(stringArray, " "))
+
 			}
 		} else {
-			if debug == "true" {
-				fmt.Println(eachLn)
-			}
+			//if debug == "true" {
+			//	fmt.Println(eachLn)
+			//}
 			tmpYamlText = append(tmpYamlText, eachLn)
 		}
 		matchedEnvVariable, _ := regexp.MatchString(env, eachLn)
