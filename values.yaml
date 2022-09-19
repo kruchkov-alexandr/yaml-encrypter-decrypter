@@ -1,18 +1,26 @@
 #first comment
 env:
   key: value1
+  key2: "value1"
   # comment two gg
   #comment
   #below empty string
-  coins: 56
 
-  emptyvalue:
-  empty_value_qoutes: ""
+  coins: 56
+  empty_value:
+  empty_value_quotes: ""
 
   key_with_comment: secretstring #follow the white rabbit
   value_quotes: "faceless messenger"
   value_quotes_two: "faceless messenger" #last commit
-  value-new: "plaintext" # comment with whitespace
-
-next:
-  1: 2
+  value_new: "plaintext" # comment with whitespace
+bla:
+  bla: bla
+apps:
+  app1:
+    key: value1
+    key2: value2
+    env:
+      key: value1
+      # some comment
+      key2: value2

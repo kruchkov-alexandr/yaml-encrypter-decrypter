@@ -17,151 +17,203 @@ import (
 )
 
 //global variables
-var envWhiteSpaces int
-var valuesForFormatting bool = false
+//var valuesForFormatting bool = false
 var tmpYamlText []string
+var envIndent int = -5555
+var currentIndent int = -77777
+
+const AES = "AES256:"
 
 func main() {
-	flagFile := flag.String(
-		"filename",
-		"values.yaml",
-		"filename for encode/decode",
-	)
 	flagKey := flag.String(
 		"key",
 		"}tf&Wr+Nt}A9g{s",
 		"AES key for encrypt/decrypt",
 	)
+	key := *flagKey
+
+	flagFile := flag.String(
+		"filename",
+		"values.yaml",
+		"filename for encode/decode",
+	)
+	filename := *flagFile
+
 	flagEnv := flag.String("env", "env:", "block-name for encode/decode")
-	flagDebug := flag.String("debug", "false", "debug mode, print encode/decode to stdout")
-	flagEncryptValue := flag.String("encrypt", "", "value to encrypt")
-	flagDecryptValue := flag.String("decrypt", "", "value to decrypt")
+	env := *flagEnv
+
 	flag.Parse()
 
-	filename := *flagFile
-	key := *flagKey
-	env := *flagEnv
-	debug := *flagDebug
-	encryptValue := *flagEncryptValue
-	decryptValue := *flagDecryptValue
-	// for @kpogonea
-	const AES = "AES256:"
+	// disable timestamp in stdout
+	log.SetFlags(0)
 
-	// for @jaxel87, encrypt/decrypt value by flag without encrypt/decrypt file
-	if encryptValue != "" {
-		encrypted, err := encryptAES(key, encryptValue)
-		fmt.Println(encrypted)
-		if err != nil {
-			log.Fatalf("something wrong during encrypt")
-		}
-		os.Exit(0)
-	}
-	if decryptValue != "" {
-		decrypted, err := decryptAES(key, decryptValue)
-		fmt.Println(decrypted)
-		if err != nil {
-			log.Fatalf("something wrong during decrypt")
-		}
-		os.Exit(0)
+	tetragonal := 333
+	value := "test"
+	if tetragonal == 1 {
+		encryptOneValue(key, value)
+		decryptOneValue(key, value)
 	}
 
+	// read file
 	text := readFile(filename)
+	// calculate indents for each line in YAML file
 	for _, eachLn := range text {
-		//show current whitespaces before character
-		currentWhiteSpaces := countLeadingSpaces(eachLn)
-		if envWhiteSpaces > currentWhiteSpaces {
-			valuesForFormatting = false
-		}
-		if valuesForFormatting {
-			stringArray := strings.Fields(eachLn)
-			var value string
-			// check if value not set
-			if len(stringArray) == 1 {
-				value = ""
-			} else {
-				value = stringArray[1]
-			}
-			// print whitespaces
-			whitespaces := strings.Repeat(" ", currentWhiteSpaces)
 
-			encrypted, err := encryptAES(key, value)
-			if err != nil {
-				log.Fatalf("something wrong")
-			}
-			matchedAesEncrypted, _ := regexp.MatchString(AES, value)
-			// check file is encrypted
-			if !matchedAesEncrypted {
-				//if debug == "true" {
-				//	if stringArray[0] == "#" || stringArray[0] == "# " {
-				//		fmt.Println(eachLn)
-				//	} else {
-				//		if value != "" {
-				//			fmt.Println(whitespaces + stringArray[0] + " " + AES + encrypted)
-				//		} else {
-				//			fmt.Println(whitespaces + stringArray[0] + value)
-				//		}
-				//	}
-				//}
-				//check if line is empty
-				if eachLn == "" {
-					tmpYamlText = append(tmpYamlText, eachLn)
-				}
-				//check if line in file is comment
-				if strings.HasPrefix(stringArray[0], "#") {
-					tmpYamlText = append(tmpYamlText, eachLn)
-				} else {
-					if value != "" {
-						stringArray[1] = AES + encrypted
-						tmpYamlText = append(tmpYamlText, whitespaces+strings.Join(stringArray, " "))
-						fmt.Println(encrypted)
-					} else {
-						tmpYamlText = append(tmpYamlText, whitespaces+stringArray[0]+value)
-					}
-				}
+		// current indent
+		currentIndent = countIndent(eachLn)
+		//log.Println(currentIndent)
 
-			} else {
-				aesBeforeDecrypt := strings.ReplaceAll(value, AES, "")
-				decrypted, err := decryptAES(key, aesBeforeDecrypt)
-				if err != nil {
-					log.Fatalf("something wrong during decrypt")
-				}
-				//if debug == "true" {
-				//	fmt.Println(whitespaces + stringArray[0] + " " + decrypted)
-				//}
-				stringArray[1] = decrypted
-				tmpYamlText = append(tmpYamlText, whitespaces+strings.Join(stringArray, " "))
-
-			}
-		} else {
-			//if debug == "true" {
-			//	fmt.Println(eachLn)
-			//}
+		// check if current line is env block
+		if matchEnvBlock(strings.TrimSpace(eachLn), env) {
+			envIndent = currentIndent
+			log.Println(eachLn)
 			tmpYamlText = append(tmpYamlText, eachLn)
+			continue
 		}
-		matchedEnvVariable, _ := regexp.MatchString(env, eachLn)
-		if matchedEnvVariable || eachLn == "" {
-			envWhiteSpaces = currentWhiteSpaces + 2
-			valuesForFormatting = true
+
+		if len(eachLn) != 0 || matchCharacter(strings.TrimSpace(eachLn), "#") {
+			if currentIndent == envIndent+2 {
+				parsedString := parseEachLine(eachLn, key)
+				log.Println(parsedString)
+				tmpYamlText = append(tmpYamlText, parsedString)
+			} else {
+				envIndent = -5645
+				log.Println(eachLn)
+				tmpYamlText = append(tmpYamlText, eachLn)
+
+			}
 		}
+
+		//check if next line after env block with new indent +2
+
 	}
 
-	// if already ok, read temp yaml slice and rewrite target yaml file
-	if debug != "true" {
-		file, err := os.OpenFile(filename, os.O_TRUNC|os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	//if already ok, read temp yaml slice and rewrite target yaml file
+	file, err := os.OpenFile(filename, os.O_TRUNC|os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalf("failed open file: %s", err)
+	}
+	datawriter := bufio.NewWriter(file)
+	for _, data := range tmpYamlText {
+		_, _ = datawriter.WriteString(data + "\n")
+	}
+	datawriter.Flush()
+	file.Close()
+}
+
+func parseEachLine(eachLn string, key string) string {
+	var parsedLine string
+
+	// disable timestamp in stdout
+	log.SetFlags(0)
+
+	// current indent
+	currentIndent = countIndent(eachLn)
+	// split string to array
+	stringArray := strings.Fields(eachLn)
+	// concatenate whitespaces
+	whitespaces := strings.Repeat(" ", currentIndent)
+
+	// skip if line is empty
+	if len(eachLn) == 0 {
+		parsedLine = eachLn
+		return parsedLine
+	}
+
+	// skip if line is comment, started with #
+	if matchCharacter(strings.TrimSpace(eachLn), "#") {
+		parsedLine = eachLn
+		return parsedLine
+	}
+
+	// skip if Value is empty and not contains quotes
+	if len(stringArray) == 1 {
+		parsedLine = eachLn
+		return parsedLine
+	}
+
+	// skip if Value is empty and contains quotes
+	if len(stringArray) == 2 && stringArray[1] == "\"\"" {
+		parsedLine = eachLn
+		return parsedLine
+	}
+
+	// convert if Value is not empty, but contains quote
+	if len(stringArray) >= 2 && stringArray[1] != "\"\"" && matchContains(strings.TrimSpace(eachLn), "\"") {
+		regexTemplate := regexp.MustCompile(`"[^"]+"`)
+		oldValueString := strings.Join(regexTemplate.FindAllString(eachLn, 1), "")
+		encryptedValue, err := encryptAES(key, oldValueString)
+		newValue := AES + encryptedValue
 		if err != nil {
-			log.Fatalf("failed open file: %s", err)
+			log.Fatalf("something wrong, cannot encrypt")
 		}
-		datawriter := bufio.NewWriter(file)
-		for _, data := range tmpYamlText {
-			_, _ = datawriter.WriteString(data + "\n")
+		stringReplaced := strings.ReplaceAll(eachLn, oldValueString, newValue)
+		parsedLine = stringReplaced
+		return parsedLine
+	}
+
+	if len(stringArray) >= 2 && stringArray[1] != "\"\"" && !matchContains(strings.TrimSpace(eachLn), "\"") {
+
+		encryptedValue, err := encryptAES(key, stringArray[1])
+		if err != nil {
+			log.Fatalf("something wrong, cannot encrypt")
 		}
-		datawriter.Flush()
-		file.Close()
+		stringArray[1] = AES + encryptedValue
+		parsedLine = whitespaces + strings.Join(stringArray[:], " ")
+		return parsedLine
+	}
+	return parsedLine
+}
+
+func encryptOneValue(key string, value string) string {
+	//for @jaxel87, encrypt/decrypt value by flag without encrypt/decrypt file
+	encrypted, err := encryptAES(key, value)
+	if err != nil {
+		log.Fatalf("something wrong during encrypt")
+	}
+	return encrypted
+}
+
+func decryptOneValue(key string, value string) string {
+	//for @jaxel87, encrypt/decrypt value by flag without encrypt/decrypt file
+	decrypted, err := decryptAES(key, value)
+	fmt.Println(decrypted)
+	if err != nil {
+		log.Fatalf("something wrong during decrypt")
+	}
+	return decrypted
+}
+
+// calculate indents for line
+func countIndent(line string) int {
+	return len(line) - len(strings.TrimLeft(line, " "))
+}
+
+// check if line is env block
+func matchEnvBlock(line string, env string) bool {
+	if strings.HasPrefix(line, env) {
+		return true
+	} else {
+		return false
 	}
 }
 
-func countLeadingSpaces(line string) int {
-	return len(line) - len(strings.TrimLeft(line, " "))
+// match if line with character
+func matchCharacter(line string, character string) bool {
+	if strings.HasPrefix(line, character) {
+		return true
+	} else {
+		return false
+	}
+}
+
+// match if line contains quotes
+func matchContains(line string, character string) bool {
+	if strings.Contains(line, character) {
+		return true
+	} else {
+		return false
+	}
 }
 
 func readFile(filename string) (text []string) {
@@ -179,6 +231,7 @@ func readFile(filename string) (text []string) {
 
 }
 
+// helm native function
 func encryptAES(password string, plaintext string) (string, error) {
 	if plaintext == "" {
 		return "", nil
@@ -210,6 +263,7 @@ func encryptAES(password string, plaintext string) (string, error) {
 	return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
 
+// helm native function
 func decryptAES(password string, crypt64 string) (string, error) {
 	if crypt64 == "" {
 		return "", nil
