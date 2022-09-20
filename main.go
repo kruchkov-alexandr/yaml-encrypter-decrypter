@@ -170,15 +170,16 @@ func parseEachLine(eachLn string, key string) string {
 
 		var result string
 		if matchContains(eachLn, AES) {
+			log.Println(strings.Trim(stringArray[1], AES))
 			decryptedValue, err := decryptAES(key, strings.Trim(stringArray[1], AES))
 			if err != nil {
-				log.Fatalf("Something wrong, cannot decrypt file, 0")
+				log.Fatalln("Something wrong, cannot decrypt file, 0", err)
 			}
 			result = decryptedValue
 		} else {
 			encryptedValue, err := encryptAES(key, oldValueString)
 			if err != nil {
-				log.Fatalf("Something wrong, cannot encrypt file, 1")
+				log.Fatalln("Something wrong, cannot encrypt file, 1", err)
 			}
 			result = encryptedValue
 			result = AES + result
@@ -192,13 +193,14 @@ func parseEachLine(eachLn string, key string) string {
 	if len(stringArray) >= 2 && stringArray[1] != "\"\"" && !matchContains(strings.TrimSpace(eachLn), "\"") {
 		var result string
 		if matchContains(eachLn, AES) {
+			log.Println("old" + stringArray[1])
 			decryptedValue, err := decryptAES(key, strings.Trim(stringArray[1], AES))
 			//log.Println(stringArray[1])
 			//log.Println(decryptedValue)
 			if err != nil {
 				//log.Println(eachLn)
 				//log.Print(err)
-				log.Fatalf("Something wrong, cannot decrypt file, 2")
+				log.Fatalln("Something wrong, cannot decrypt file, 2", err)
 			}
 			result = decryptedValue
 			stringArray[1] = result
@@ -206,7 +208,7 @@ func parseEachLine(eachLn string, key string) string {
 			encryptedValue, err := encryptAES(key, stringArray[1])
 			if err != nil {
 				//log.Println(eachLn)
-				log.Fatalf("Something wrong, cannot encrypt file, 3")
+				log.Fatalln("Something wrong, cannot encrypt file, 3", err)
 			}
 			result = encryptedValue
 			stringArray[1] = AES + result
