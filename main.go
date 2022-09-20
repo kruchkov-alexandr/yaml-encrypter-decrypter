@@ -18,67 +18,73 @@ import (
 //global variables
 var tmpYamlText []string
 var envIndent int = -5555
-var currentIndent int = -77777
-var dryRun bool = false
+var currentIndent int = -7777
 
 const AES = "AES256:"
 
 func main() {
+
 	flagKey := flag.String(
 		"key",
-		"}tf&Wr+Nt}A9g{s",
+		"",
 		"AES key for encrypt/decrypt",
 	)
-	key := *flagKey
-
+	flagDryRun := flag.Bool(
+		"dry-run",
+		false,
+		"AES key for encrypt/decrypt",
+	)
 	flagFile := flag.String(
 		"filename",
-		"dev.yaml",
+		"",
 		"filename for encode/decode",
 	)
-	filename := *flagFile
-
 	flagEnv := flag.String("env", "secret:", "YAML block-name for encode/decode")
-	env := *flagEnv
-
 	flagValue := flag.String(
 		"value",
 		"",
 		"value for encrypt/decrypt",
 	)
-	value := *flagValue
-
 	flagOperation := flag.String(
 		"operation",
-		"encrypt",
+		"",
 		"Available operations: encrypt, decrypt",
 	)
-	operation := *flagOperation
 
 	flag.Parse()
 
 	// disable timestamp in stdout
 	log.SetFlags(0)
 
+	if *flagKey == "" {
+		log.Println("Please specify environment variable \"YED-PASSWORD\" ")
+		os.Exit(0)
+	}
+
 	// decrypt/encrypt value
-	if value != "" {
-		if matchContains(value, AES) {
-			log.Println(decryptOneValue(key, strings.TrimPrefix(value, AES)))
+	if *flagValue != "" {
+		if matchContains(*flagValue, AES) {
+			log.Println(decryptOneValue(*flagKey, strings.TrimPrefix(*flagValue, AES)))
 			os.Exit(0)
 		} else {
-			log.Println(AES + encryptOneValue(key, value))
+			log.Println(AES + encryptOneValue(*flagKey, *flagValue))
 			os.Exit(0)
 		}
 	}
 
+	if *flagOperation == "" {
+		log.Println("Please, specify operation: encrypt or decrypt")
+		os.Exit(0)
+	}
+
 	// read file
-	text := readFile(filename)
+	text := readFile(*flagFile)
 	for _, eachLn := range text {
 
 		// disable double-encode issue
-		if matchContains(eachLn, AES) && operation == "encrypt" {
+		if matchContains(eachLn, AES) && *flagOperation == "encrypt" {
 			log.Printf("Cannot encode file %v!\n"+
-				"It seems that string \"%v\" already encoded!\n", filename, eachLn)
+				"It seems that string \"%v\" already encoded!\n", *flagFile, eachLn)
 			os.Exit(1)
 		}
 
@@ -87,9 +93,9 @@ func main() {
 		//log.Println(currentIndent)
 
 		// check if current line is env block
-		if matchPrefixEnvBlock(strings.TrimSpace(eachLn), env) {
+		if matchPrefixEnvBlock(strings.TrimSpace(eachLn), *flagEnv) {
 			envIndent = currentIndent
-			if dryRun {
+			if *flagDryRun {
 				log.Println(eachLn)
 			} else {
 				tmpYamlText = append(tmpYamlText, eachLn)
@@ -100,22 +106,22 @@ func main() {
 		// main logic
 		if len(eachLn) != 0 || matchPrefixCharacter(strings.TrimSpace(eachLn), "#") {
 			if currentIndent == envIndent+2 {
-				parsedString := parseEachLine(eachLn, key, operation)
-				if dryRun {
+				parsedString := parseEachLine(eachLn, *flagKey, *flagOperation)
+				if *flagDryRun {
 					log.Println(parsedString)
 				} else {
 					tmpYamlText = append(tmpYamlText, parsedString)
 				}
 			} else {
 				envIndent = -5645
-				if dryRun {
+				if *flagDryRun {
 					log.Println(eachLn)
 				} else {
 					tmpYamlText = append(tmpYamlText, eachLn)
 				}
 			}
 		} else {
-			if dryRun {
+			if *flagDryRun {
 				log.Println(eachLn)
 			} else {
 				tmpYamlText = append(tmpYamlText, eachLn)
@@ -124,8 +130,8 @@ func main() {
 	}
 
 	//if already ok, read temp yaml slice and rewrite target yaml file
-	if !dryRun {
-		file, err := os.OpenFile(filename, os.O_TRUNC|os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if !*flagDryRun {
+		file, err := os.OpenFile(*flagFile, os.O_TRUNC|os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatalf("failed open file: %s", err)
 		}
@@ -163,6 +169,12 @@ func parseEachLine(eachLn string, key string, operation string) string {
 		return parsedLine
 	}
 
+	// skip if line is comment, started with ---
+	if matchPrefixCharacter(strings.TrimSpace(eachLn), "---") {
+		parsedLine = eachLn
+		return parsedLine
+	}
+
 	// skip if Value is empty and not contains quotes
 	if len(stringArray) == 1 {
 		parsedLine = eachLn
@@ -181,7 +193,6 @@ func parseEachLine(eachLn string, key string, operation string) string {
 		oldValueString := strings.Join(regexTemplate.FindAllString(eachLn, 1), "")
 
 		var result string
-
 		if operation == "encrypt" {
 			encryptedValue, err := encryptAES(key, oldValueString)
 			if err != nil {

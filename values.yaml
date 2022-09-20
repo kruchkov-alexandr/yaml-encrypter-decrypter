@@ -1,14 +1,14 @@
 ---
 #first comment
 secret:
-  key: value1
+  key: AES256:XhHUJpqNNuKlAEQ1x26+cxh4B8Ji1Ty2uk3u21+L/F0=
   # comment two gg
   #comment
   #below empty string
-  coins: 56
+  coins: AES256:lr0PR0l0Eb8ZGmsChzBD+ns0pC98CfL4cBMKQudcp+s=
 
   empty-value:
-  empty_value_quotes: ""
+  empty_value_quotes: AES256:bk2REkOLa6ts08WYm0LettvgVn8Al7cpzn+kjMgqvrg=
 
   key_with_comment: secret-string #follow the white rabbit
   value_quotes: "faceless messenger"
@@ -20,6 +20,6 @@ next:
   bla:
     bla: bla2
   secret:
-    3: 4
+    3: AES256:xD0vqdEaRNegV1I4HMeW3DWRsrzJJeM9SB1Gjfha6Jg=
     # some text
-    key: value5
+    key: AES256:daUgDmBTqLRQdA84Wan6zb5AqFDqyeLeRzlKFfpUQhQ=
