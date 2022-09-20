@@ -27,12 +27,12 @@ func main() {
 	flagKey := flag.String(
 		"key",
 		"",
-		"AES key for encrypt/decrypt",
+		"AES key-password for encrypt/decrypt",
 	)
 	flagDryRun := flag.Bool(
 		"dry-run",
 		false,
-		"AES key for encrypt/decrypt",
+		"dry-run to STDOUT",
 	)
 	flagFile := flag.String(
 		"filename",
@@ -113,6 +113,7 @@ func main() {
 					tmpYamlText = append(tmpYamlText, parsedString)
 				}
 			} else {
+				// flush envIndent
 				envIndent = -5645
 				if *flagDryRun {
 					log.Println(eachLn)
