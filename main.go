@@ -19,7 +19,7 @@ import (
 var tmpYamlText []string
 var envIndent int = -5555
 var currentIndent int = -77777
-var dryRun bool = true
+var dryRun bool = false
 
 const AES = "AES256:"
 
@@ -33,7 +33,7 @@ func main() {
 
 	flagFile := flag.String(
 		"filename",
-		"values.yaml",
+		"dev.yaml",
 		"filename for encode/decode",
 	)
 	filename := *flagFile
@@ -77,7 +77,8 @@ func main() {
 
 		// disable double-encode issue
 		if matchContains(eachLn, AES) && operation == "encrypt" {
-			log.Printf("Cannot encode file %v! It seems that string \"%v\" already encoded!\n", filename, eachLn)
+			log.Printf("Cannot encode file %v!\n"+
+				"It seems that string \"%v\" already encoded!\n", filename, eachLn)
 			os.Exit(1)
 		}
 
@@ -209,14 +210,10 @@ func parseEachLine(eachLn string, key string, operation string) string {
 		var result string
 
 		if operation == "encrypt" {
-
-			log.Println(stringArray[1])
 			encryptedValue, err := encryptAES(key, stringArray[1])
 			if err != nil {
-				//log.Println(eachLn)
 				log.Fatalln("Something wrong, cannot encrypt file, 3", err)
 			}
-			log.Println(encryptedValue)
 
 			result = encryptedValue
 			stringArray[1] = AES + result
