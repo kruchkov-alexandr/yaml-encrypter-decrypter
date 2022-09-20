@@ -1,106 +1,100 @@
-# yaml-encrypter-decrypter
+# YED, yaml-encrypter-decrypter
 
-Кроссплатформенная утилита, позволяющая шифровать в AES значения паролей/секретов в файлах YAML формата
+Cross-platform utility for encrypting/decrypting values of sensitive data in YAML files.
 
-Утилита особенно актуальна для тех, кто не использует hashicorp vault,
-но не хочет хранить секретные данные в git репозитории.
+Utility is especially relevant for developers who can't use Hashicorp Vault or SOPS, but not want to store sensitive data in Git repository.
 
-Шифрование построено на базе AES-256 CBC, который входит в состав функции Helm 3:
+Based on AES-256 CBC encryption, which is part of Helm 3 functions:
 - https://helm.sh/docs/chart_template_guide/function_list/#encryptaes
 - https://helm.sh/docs/chart_template_guide/function_list/#decryptaes
 
-Не совместимо с openssl AES-256 CBC.
+Not compatible with openssl AES-256 CBC!
 
-# Вариант использования 1
-- Разработчик/девопс качает последние изменения из git репозитория.
-- Видит, что файл(ы) YAML с данными зашифрованы(есть префикс "AES256:" в значениях).
-- Вводит в консоль CMD/GitBash/WSL/etc пароль для расшифровки: set AESKEY="secretpassword"
-- Скачивает бинарник, если его нет.
-- Расшифровывает файл YAML при помощи команды `./yed -key=$AESKEY` или `./yed -key=$AESKEY -filename=application.yaml`
-- Изменяет нужную переменную.
-- Зашифровывает файл YAML при помощи команды `./yed -key=$AESKEY` или `./yed -key=$AESKEY -filename=application.yaml`
-- git commit, git push
-
-# Вариант использования 2
-- Разработчик/девопс качает последние изменения из git репозитория.
-- Видит, что файл(ы) YAML с данными зашифрованы(есть префикс "AES256:" в значениях).
-- Вводит в консоль CMD/GitBash/WSL/etc пароль для расшифровки: set AESKEY="secretpassword"
-- Скачивает бинарник, если его нет.
-- Зашифровывает, не меняя файла, одну переменную, например так `./yed -encrypt PLAINTEXT -key $AESKEY`
-- Полученный результат вставляет в зашифрованный YAML файл с префиксом AES256:
-```yaml
-env: 
-  key: AES256:<закодированное_значение>
+# Use case example 1
+- Developer/DevOps fetch last changes from Git repository
 ```
-- git commit, git push
+- git pull --all
+```
+- Developer/DevOps runs command to decrypt all sensitive data in encrypted YAML file
+```
+yed -decrypt -key SUPERSECRETPASWORD -file values.yaml
+```
+- Developer/DevOps makes changes in decrypted YAML file, for example add new variable
+- Developer/DevOps runs command to encrypt all sensitive data in decrypted YAML file
+```
+yed -encrypt -key SUPERSECRETPASWORD -file values.yaml
+```
+- Developer/DevOps commit last own changes to Git repository
+```
+git commit / git push
+```
 
-Во втором случае в git history будет видна только одна изменённая строчка и не надо декодить/енкодить весь файл.
+# Use case example 2
+- Developer/DevOps fetch last changes from Git repository
+```
+- git pull --all
+```
+- Developer/DevOps runs command to encrypt new one value (or decrypt)
+```
+yed  -key SUPERSECRETPASWORD -value NEWVALUE
+```
+- Developer/DevOps copy encrypted value from STDOUT and paste it to encrypted YAML file
+- Developer/DevOps commit last own changes to Git repository
+```
+git commit / git push
+```
+In the second case, only one line changed and visible in Git history.
+There are no sense to decode/encode the whole YAML file.
 
 
-# Зачем это? Есть же Ansible vault и SOPS mozilla!
-- шифруется не весь файл, как штатно в ansible vault/SOPS, а только значения переменных определённого блока 
-Это очень удобно для git history/ pull request
-- не требуется дополнительного ПО: python, ansible, ansible-vault и куча зависимостей. 
-- работает везде: linux/windows/macos/wsl/gitbash/raspberry, при компиляции можно выбрать любые платформы. 
-Тот же ansible-vault не работает на gitbash.
-- полная совместимость с helm 3 версии, функции `decryptAES` и `encryptAES`. 
-YAML файл можно шифровать и расшифровывать как при помощи утилиты, так и шифровать утилитой, но расшифровывать чартом хелма.
+# But wait? Why not use SOPS, Ansible Vault or Hashicorp Vault?
+
+- available encryption/decryption of one variable without modify the whole file
+  - Convenient for git history/ pull request
+- without any additional software like Python, Ansible, Ansible-vault and dependencies 
+- Cross-platform: linux/windows/macos/wsl/gitbash/raspberry
+    - For example Ansible-vault don't executable on git-bash.
+- 100% compatible with Helm(version 3+) functions `decryptAES` and `encryptAES`
+    - We can decrypt/encrypt with utility and decrypt in helm templates
+- 100% free and open source
+
 
 # Download
 https://github.com/kruchkov-alexandr/yaml-encrypter-decrypter/releases/
 
-# Как использовать
-У утилиты 6 флагов, значения у 4-ех задано по умолчанию.
+# How to use
 ```
-  -dry-run true/false
-        режим откладки, выводит в stdout планируемые изменения, но не изменяет yaml файл
-        dry-run mode, print encode/decode to stdout (default "false")
+There are 6 flags:
+  -dry-run boolean
+        dry-run mode, print planned encode/decode to stdout (default "false")
   -env string
-        название-начало блока, значения которых надо шифровать
         block-name for encode/decode (default "secret:")
   -filename string
-        файл,который необходимо зашифровать/дешифровать
         filename for encode/decode (default "")
   -key string
-        секретный ключ
-        после "пилота" будет убрано дефолтное значение
         AES key for encrypt/decrypt (default "")
   -operation string
-        при выборе операции выбираем decrypt/encrypt
         Available operations: encrypt, decrypt (default "")
   -value string
-        при вводе значения в stdout выводится зашифрованое значение
         value to encrypt/decrypt (default "")
-
 ```
 
-# Варианты запуска утилиты
+# Examples
+```
+- `yed.exe -filename application.yaml -key 12345678123456781234567812345678 -operation decrypt` 
+- `yed -value PLAINTEXT -key 12345678123456781234567812345678`
+- `yed -value S5B4ZY2aA1xXBe8HJ8se5sKb/v2J/b7uzOoifpIByzM= -key 12345678123456781234567812345678`
+```
 
-- `yed.exe -filename application.yaml -key 12345678123456781234567812345678` 
-- `./yed -encrypt PLAINTEXT`
-- `./yed -value S5B4ZY2aA1xXBe8HJ8se5sKb/v2J/b7uzOoifpIByzM=  -key SUPERSECRETpassw0000000rd`
+# HELM compatibility
+- encrypted sensitive data in YAML file stored in Git with prefix `AES256:`
+- utility runs on local side only for encrypt/decrypt, no need to copy it on CI/CD
+- decryption on CI/Cd use native helm3 functions without any additional software or utilities
 
-
-
-# Особенности 
-Так, как это MVP, есть ряд особенностей:
-- от использования библиотек gopkg.in/yaml.v3 и gopkg.in/yaml.v2 пришлось отказаться, потому как они на ходу конвертят в json формат, 
-тем самым затирая комментарии. Задача утилиты шифровать секреты, а не стирать комменты, которые зачастую очень важны.
-
-
-
-# HELM compatibility 
-Общая идея: 
-- бинарник нужен лишь для енкода/декода **локально** у разработчика/девопса
-- все values.yaml файлы хранятся с закодированными значениями в git репозитории
-- при деплое бинарник yed даже не нужен(не нужно тащить его на gitlab/teamcity агенты)
-- расшифровка идёт при помощи нативных функций helm3
-
-Пример для встраивания в чарт helm ниже:
-
+Example:
 values.yaml
 ```yaml
-# aesKey: мы получаем через helm upgrade --install .... --set aesKey="СЕКРЕТНЫЙ КЛЮЧ"
+# aesKey: get from "helm upgrade --install .... --set aesKey="SUPERSECRETKEY"
 env:
   key: AES256:11xkAyke8Dx5dQepPSW+VV4FyNUhbcKC3+63+uuFgO8=
 
@@ -124,13 +118,13 @@ data:
   {{- end }}
 ```
 
-Запуск хелма:
+Run helm deploy:
 ```shell
-set SUPERSECRETAESKEY="}tf&Wr+Nt}A9g{s"
+set SUPERSECRETAESKEY="1234567890"
 helm template RELEASENAME ./CHARTDIRECTORY --values=values.yaml --set aesKey=$SUPERSECRETAESKEY
 ```
 
-В итоге получаем при генерации манифеста:
+Generated YAML manifest:
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -142,7 +136,7 @@ metadata:
 data:
   key: NDM1NA==
 ```
-Если перевести значения из base64, то будет так:
+Base64 decoded:
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -157,10 +151,9 @@ data:
 
 
 # Encrypt/Decrypt one value feature
-Можно просто шифровать/расшифровать значения, не перезаписывая файл.
-Например для того, чтобы не меняя весь файл, зашифровать одну переменную и копипастом вставить в YAML зашифрованный файл.
+We can encrypt/decrypt one value without modify the whole file.
 
-Пример использования:
+Example:
 ```yaml
 
 
@@ -180,9 +173,7 @@ set GOARCH=amd64 && set GOOS=windows && go build -o yed.exe main.go
 ```
 
 # EXAMPLE
-
-before encrypt:
-
+YAML file before encrypt:
 ```yaml
 #first comment
 env:
@@ -203,10 +194,7 @@ str: # 3 comment
     env:
       srfgar: 4354
 ```
-
-after encrypt:
-
-`./yed`
+YAML file after encrypt:
 ```yaml
 #first comment
 env:
