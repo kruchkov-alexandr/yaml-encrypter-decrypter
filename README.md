@@ -13,7 +13,7 @@ Not compatible with openssl AES-256 CBC!
 # Use case example 1
 - Developer/DevOps fetch last changes from Git repository
 ```
-- git pull --all
+git pull --all
 ```
 - Developer/DevOps runs command to decrypt all sensitive data in encrypted YAML file
 ```
@@ -32,7 +32,7 @@ git commit / git push
 # Use case example 2
 - Developer/DevOps fetch last changes from Git repository
 ```
-- git pull --all
+git pull --all
 ```
 - Developer/DevOps runs command to encrypt new one value (or decrypt)
 ```
@@ -214,5 +214,4 @@ str: # 3 comment
 
     env:
       srfgar: AES256:uhkboJTlM2wa5VBrgWQ5njwSBVyEQTEXVF89yH/eteI=
-
 ```
