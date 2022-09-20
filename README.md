@@ -53,15 +53,13 @@ There are no sense to decode/encode the whole YAML file.
   - Convenient for git history/ pull request
 - without any additional software like Python, Ansible, Ansible-vault and dependencies 
 - Cross-platform: linux/windows/macos/wsl/gitbash/raspberry
-    - For example Ansible-vault don't executable on git-bash.
+  - For example Ansible-vault don't executable on git-bash.
 - 100% compatible with Helm(version 3+) functions `decryptAES` and `encryptAES`
-    - We can decrypt/encrypt with utility and decrypt in helm templates
+  - We can decrypt/encrypt with utility and decrypt in helm templates
 - 100% free and open source
-
 
 # Download
 https://github.com/kruchkov-alexandr/yaml-encrypter-decrypter/releases/
-
 # How to use
 ```
 There are 6 flags:
