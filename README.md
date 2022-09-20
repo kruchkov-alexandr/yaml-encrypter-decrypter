@@ -52,45 +52,41 @@ https://github.com/kruchkov-alexandr/yaml-encrypter-decrypter/releases/
 # Как использовать
 У утилиты 6 флагов, значения у 4-ех задано по умолчанию.
 ```
-  -debug string
+  -dry-run true/false
         режим откладки, выводит в stdout планируемые изменения, но не изменяет yaml файл
-        debug mode, print encode/decode to stdout (default "false")
+        dry-run mode, print encode/decode to stdout (default "false")
   -env string
         название-начало блока, значения которых надо шифровать
-        block-name for encode/decode (default "env:")
+        block-name for encode/decode (default "secret:")
   -filename string
         файл,который необходимо зашифровать/дешифровать
-        filename for encode/decode (default "values.yaml")
+        filename for encode/decode (default "")
   -key string
         секретный ключ
         после "пилота" будет убрано дефолтное значение
-        AES key for encrypt/decrypt (default "}tf&Wr+Nt}A9g{s")
-  -decrypt string
-        при вводе значения в stdout выводится расшифрованное значение
-        value to decrypt
-  -encrypt string
+        AES key for encrypt/decrypt (default "")
+  -operation string
+        при выборе операции выбираем decrypt/encrypt
+        Available operations: encrypt, decrypt (default "")
+  -value string
         при вводе значения в stdout выводится зашифрованое значение
-        value to encrypt
+        value to encrypt/decrypt (default "")
 
 ```
 
 # Варианты запуска утилиты
-- `yed.exe` 
-- `yed.exe -key 12345678123456781234567812345678` 
-- `yed.exe -filename application.yaml` 
+
 - `yed.exe -filename application.yaml -key 12345678123456781234567812345678` 
 - `./yed -encrypt PLAINTEXT`
-- `./yed -decrypt DpsqP/MxMSk3wk+GDBBG0O6vcNmU5tW/mvtnfdd0GOY=`
-- `./yed -decrypt S5B4ZY2aA1xXBe8HJ8se5sKb/v2J/b7uzOoifpIByzM=  -key SUPERSECRETpassw0000000rd`
+- `./yed -value S5B4ZY2aA1xXBe8HJ8se5sKb/v2J/b7uzOoifpIByzM=  -key SUPERSECRETpassw0000000rd`
 
 
 
 # Особенности 
 Так, как это MVP, есть ряд особенностей:
-- есть дефолтный key, после MVP будет убрано дефолтное значение
 - от использования библиотек gopkg.in/yaml.v3 и gopkg.in/yaml.v2 пришлось отказаться, потому как они на ходу конвертят в json формат, 
 тем самым затирая комментарии. Задача утилиты шифровать секреты, а не стирать комменты, которые зачастую очень важны.
-- запуск утилиты шифрует/дешифрует YAML файл по ключевому значению `AES256:` в тексте, отдельного флага на декрипт/экрипт нет, задача максимально упростить работу.
+
 
 
 # HELM compatibility 
@@ -106,7 +102,7 @@ values.yaml
 ```yaml
 # aesKey: мы получаем через helm upgrade --install .... --set aesKey="СЕКРЕТНЫЙ КЛЮЧ"
 env:
-  rrrr: AES256:11xkAyke8Dx5dQepPSW+VV4FyNUhbcKC3+63+uuFgO8=
+  key: AES256:11xkAyke8Dx5dQepPSW+VV4FyNUhbcKC3+63+uuFgO8=
 
 ```
 
@@ -144,7 +140,7 @@ metadata:
   labels:
     app: example
 data:
-  rrrr: NDM1NA==
+  key: NDM1NA==
 ```
 Если перевести значения из base64, то будет так:
 ```yaml
@@ -156,7 +152,7 @@ metadata:
   labels:
     app: example
 data:
-  rrrr: 4354
+  key: 4354
 ```
 
 
@@ -166,16 +162,12 @@ data:
 
 Пример использования:
 ```yaml
-$ ./yed -encrypt PLAINTEXT
-DpsqP/MxMSk3wk+GDBBG0O6vcNmU5tW/mvtnfdd0GOY=
 
-$ ./yed -decrypt DpsqP/MxMSk3wk+GDBBG0O6vcNmU5tW/mvtnfdd0GOY=
-PLAINTEXT
 
-$ ./yed -encrypt PLAINTEXT -key SUPERSECRETpassw0000000rd
+$ ./yed -value PLAINTEXT -key SUPERSECRETpassw0000000rd
 S5B4ZY2aA1xXBe8HJ8se5sKb/v2J/b7uzOoifpIByzM=
 
-$ ./yed -decrypt S5B4ZY2aA1xXBe8HJ8se5sKb/v2J/b7uzOoifpIByzM=  -key SUPERSECRETpassw0000000rd
+$ ./yed -value S5B4ZY2aA1xXBe8HJ8se5sKb/v2J/b7uzOoifpIByzM=  -key SUPERSECRETpassw0000000rd
 PLAINTEXT
 
 ```
