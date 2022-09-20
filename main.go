@@ -8,7 +8,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"flag"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -20,7 +19,7 @@ import (
 var tmpYamlText []string
 var envIndent int = -5555
 var currentIndent int = -77777
-var dryRun bool = false
+var dryRun bool = true
 
 const AES = "AES256:"
 
@@ -39,7 +38,7 @@ func main() {
 	)
 	filename := *flagFile
 
-	flagEnv := flag.String("env", "secret:", "block-name for encode/decode")
+	flagEnv := flag.String("env", "secret:", "YAML block-name for encode/decode")
 	env := *flagEnv
 
 	flagValue := flag.String(
@@ -49,25 +48,38 @@ func main() {
 	)
 	value := *flagValue
 
+	flagOperation := flag.String(
+		"operation",
+		"encrypt",
+		"Available operations: encrypt, decrypt",
+	)
+	operation := *flagOperation
+
 	flag.Parse()
 
 	// disable timestamp in stdout
 	log.SetFlags(0)
 
-	// please don't touch this code
-	tetragonal := 18
-	if tetragonal == 1 {
-		a := decryptOneValue(key, value)
-		log.Println(a)
-		os.Exit(0)
+	// decrypt/encrypt value
+	if value != "" {
+		if matchContains(value, AES) {
+			log.Println(decryptOneValue(key, strings.TrimPrefix(value, AES)))
+			os.Exit(0)
+		} else {
+			log.Println(AES + encryptOneValue(key, value))
+			os.Exit(0)
+		}
 	}
 
 	// read file
 	text := readFile(filename)
-	// calculate indents for each line in YAML file
 	for _, eachLn := range text {
 
-		//time.Sleep(20 * time.Millisecond)
+		// disable double-encode issue
+		if matchContains(eachLn, AES) && operation == "encrypt" {
+			log.Printf("Cannot encode file %v! It seems that string \"%v\" already encoded!\n", filename, eachLn)
+			os.Exit(1)
+		}
 
 		// current indent
 		currentIndent = countIndent(eachLn)
@@ -87,7 +99,7 @@ func main() {
 		// main logic
 		if len(eachLn) != 0 || matchPrefixCharacter(strings.TrimSpace(eachLn), "#") {
 			if currentIndent == envIndent+2 {
-				parsedString := parseEachLine(eachLn, key)
+				parsedString := parseEachLine(eachLn, key, operation)
 				if dryRun {
 					log.Println(parsedString)
 				} else {
@@ -125,7 +137,7 @@ func main() {
 	}
 }
 
-func parseEachLine(eachLn string, key string) string {
+func parseEachLine(eachLn string, key string, operation string) string {
 	var parsedLine string
 
 	// disable timestamp in stdout
@@ -166,52 +178,59 @@ func parseEachLine(eachLn string, key string) string {
 	if len(stringArray) >= 2 && stringArray[1] != "\"\"" && matchContains(strings.TrimSpace(eachLn), "\"") {
 		regexTemplate := regexp.MustCompile(`"[^"]+"`)
 		oldValueString := strings.Join(regexTemplate.FindAllString(eachLn, 1), "")
-		log.Println("old" + oldValueString)
 
 		var result string
-		if matchContains(eachLn, AES) {
-			log.Println(strings.Trim(stringArray[1], AES))
-			decryptedValue, err := decryptAES(key, strings.Trim(stringArray[1], AES))
-			if err != nil {
-				log.Fatalln("Something wrong, cannot decrypt file, 0", err)
-			}
-			result = decryptedValue
-		} else {
+
+		if operation == "encrypt" {
 			encryptedValue, err := encryptAES(key, oldValueString)
 			if err != nil {
-				log.Fatalln("Something wrong, cannot encrypt file, 1", err)
+				log.Fatalln("Cannot encrypt value, reason:", err)
 			}
 			result = encryptedValue
 			result = AES + result
+		} else if operation == "decrypt" {
+			decryptedValue, err := decryptAES(key, strings.TrimPrefix(stringArray[1], AES))
+			if err != nil {
+				log.Fatalln("Cannot decrypt key/value. \n"+
+					"Please check encoded variables in YAML file, reason", err)
+			}
+			result = decryptedValue
+		} else {
+			log.Println("Please, specify operation: encrypt or decrypt")
+			os.Exit(0)
 		}
-
 		stringReplaced := strings.ReplaceAll(eachLn, oldValueString, result)
 		parsedLine = stringReplaced
 		return parsedLine
 	}
 	// convert if Value is not empty, but NOT contains quotes
 	if len(stringArray) >= 2 && stringArray[1] != "\"\"" && !matchContains(strings.TrimSpace(eachLn), "\"") {
+
 		var result string
-		if matchContains(eachLn, AES) {
-			log.Println("old" + stringArray[1])
-			decryptedValue, err := decryptAES(key, strings.Trim(stringArray[1], AES))
-			//log.Println(stringArray[1])
-			//log.Println(decryptedValue)
-			if err != nil {
-				//log.Println(eachLn)
-				//log.Print(err)
-				log.Fatalln("Something wrong, cannot decrypt file, 2", err)
-			}
-			result = decryptedValue
-			stringArray[1] = result
-		} else {
+
+		if operation == "encrypt" {
+
+			log.Println(stringArray[1])
 			encryptedValue, err := encryptAES(key, stringArray[1])
 			if err != nil {
 				//log.Println(eachLn)
 				log.Fatalln("Something wrong, cannot encrypt file, 3", err)
 			}
+			log.Println(encryptedValue)
+
 			result = encryptedValue
 			stringArray[1] = AES + result
+		} else if operation == "decrypt" {
+			decryptedValue, err := decryptAES(key, strings.TrimPrefix(stringArray[1], AES))
+			if err != nil {
+				log.Fatalln("Cannot decrypt key/value. \n"+
+					"Please check encoded variables in YAML file, reason", err)
+			}
+			result = decryptedValue
+			stringArray[1] = result
+		} else {
+			log.Println("Please, specify operation: encrypt or decrypt")
+			os.Exit(0)
 		}
 
 		parsedLine = whitespaces + strings.Join(stringArray[:], " ")
@@ -232,7 +251,6 @@ func encryptOneValue(key string, value string) string {
 //for @jaxel87, decrypt value by flag without decryption file
 func decryptOneValue(key string, value string) string {
 	decrypted, err := decryptAES(key, value)
-	fmt.Println(decrypted)
 	if err != nil {
 		log.Fatalf("Something wrong during decrypt value")
 	}

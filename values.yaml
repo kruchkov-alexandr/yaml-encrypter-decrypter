@@ -1,24 +1,25 @@
+---
 #first comment
 secret:
-  key: AES256:Km7RfHvH4Nq3qTubEFd2GencF2hCJhkBG6wJVTM6eAw=
+  key: value1
   # comment two gg
   #comment
   #below empty string
-  coins: AES256:bDiP+Ft39qRhpCvEx0mrCDLO87i36iu0YLZhgV7xnno=
+  coins: 56
 
   empty-value:
   empty_value_quotes: ""
 
-  key_with_comment: AES256:wbtF3JRH2V409ly1lNl1AKMojOP3rcA7Tpv7nSBu4Vc= #follow the white rabbit
-  value_quotes: AES256:Jq4D8rT0Hww2LaXq+gQ/YZ0MSqQWRJ24pdeGDNuB6lXBYyFg/EN8mXch5bkj4Qk9
-  value_quotes_two: AES256:Sq4gReSYF5TbLj7iSftuKKE1nuW9dyLniPPRChUUa59aWf/64qQTt7HrINc4jMbW #last commit
-  value-new: AES256:wRcZjpKM4ztNUU5yg5AdY9r/dsYpx36HG1lnVxo5JOo= # comment with whitespace
+  key_with_comment: secret-string #follow the white rabbit
+  value_quotes: "faceless messenger"
+  value_quotes_two: "faceless messenger" #last commit
+  value-new: "plaintext" # comment with whitespace
 
 next:
   1: 2
   bla:
     bla: bla2
   secret:
-    1: AES256:PcO0iTrtI/cjzLeiMxMUPTqZIoiDi/NjB4nZnVFhREs=
+    3: 4
     # some text
-    key: AES256:r9/4La74jZLd9q/q7bZnbeQhBN6ibwQ0zZ8kXxOppYA=
+    key: value5
