@@ -49,7 +49,7 @@ There are no sense to decode/encode the whole YAML file.
 
 # But wait? Why not use SOPS, Ansible Vault or Hashicorp Vault?
 
-- available encryption/decryption of one variable without modify the whole file
+- available encryption/decryption of one variable or block without modify the whole file
   - Convenient for git history/ pull request
 - without any additional software like Python, Ansible, Ansible-vault and dependencies 
 - Cross-platform: linux/windows/macos/wsl/gitbash/raspberry
