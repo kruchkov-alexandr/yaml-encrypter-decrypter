@@ -159,11 +159,15 @@ func parseEachLine(eachLn string, key string, operation string) string {
 	whitespaces := strings.Repeat(" ", currentIndent)
 
 	// skip if line is empty
+	if len(strings.TrimSpace(eachLn)) == 0 {
+		parsedLine = eachLn
+		return parsedLine
+	}
+	// skip if line is empty with indent
 	if len(eachLn) == 0 {
 		parsedLine = eachLn
 		return parsedLine
 	}
-
 	// skip if line is comment, started with #
 	if matchPrefixCharacter(strings.TrimSpace(eachLn), "#") {
 		parsedLine = eachLn
